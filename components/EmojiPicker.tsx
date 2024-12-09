@@ -2,6 +2,7 @@
 
 import { EmojiClickData, Theme } from 'emoji-picker-react'
 import dynamic from 'next/dynamic'
+import { CategoryConfig } from 'path/to/types'
 
 const Picker = dynamic(
   () => import('emoji-picker-react').then((mod) => mod.default),
@@ -29,14 +30,10 @@ export function EmojiPicker({ onEmojiSelect }: EmojiPickerProps) {
         previewConfig={{ showPreview: false }}
         skinTonesDisabled
         categories={[
-          'smileys_people',
-          'animals_nature',
-          'food_drink',
-          'travel_places',
-          'activities',
-          'objects',
-          'symbols',
-          'flags'
+          CategoryConfig.SmileysPeople,
+          CategoryConfig.AnimalsNature,
+          CategoryConfig.FoodDrink,
+          CategoryConfig.TravelPlaces
         ]}
       />
     </div>
