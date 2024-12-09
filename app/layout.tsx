@@ -4,6 +4,7 @@ import { UnderlineNavigation } from '@/components/NavDropdown'
 import './globals.css'
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import BuyMeCoffeeButton from '@/components/BuyMeCoffeeButton'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -24,6 +25,7 @@ export default function RootLayout({
         {children}
         <Analytics />
         <SpeedInsights />
+        <BuyMeCoffeeButton />
       </body>
     </html>
   )
