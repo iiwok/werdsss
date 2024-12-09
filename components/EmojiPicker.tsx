@@ -2,6 +2,7 @@
 
 import { EmojiClickData, Theme, Categories } from 'emoji-picker-react'
 import dynamic from 'next/dynamic'
+import { useEffect, useState } from 'react'
 
 const Picker = dynamic(
   () => import('emoji-picker-react').then((mod) => mod.default),
@@ -13,27 +14,31 @@ interface EmojiPickerProps {
 }
 
 export function EmojiPicker({ onEmojiSelect }: EmojiPickerProps) {
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     onEmojiSelect(emojiData.emoji)
   }
 
+  useEffect(() => {
+    // Adjust the state when the picker is opened or closed
+    setIsPickerOpen(true);
+    return () => {
+      setIsPickerOpen(false);
+    };
+  }, []);
+
   return (
-    <div className="relative bg-white rounded-lg shadow-lg overflow-hidden">
+    <div className="relative inline-block rounded-lg shadow-lg overflow-hidden">
       <Picker 
         onEmojiClick={handleEmojiClick}
         theme={Theme.LIGHT}
-        width={300}
+        width={400}
         height={400}
         lazyLoadEmojis={true}
         searchPlaceHolder="Search emoji..."
         previewConfig={{ showPreview: false }}
         skinTonesDisabled
-        categories={[
-          Categories.SMILEYS_PEOPLE,
-          Categories.ANIMALS_NATURE,
-          Categories.FOOD_DRINK,
-          Categories.TRAVEL_PLACES
-        ]}
       />
     </div>
   )

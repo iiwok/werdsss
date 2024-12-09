@@ -57,16 +57,16 @@ export default function WordLayout({ pagePath }: WordLayoutProps) {
       {/* Main content */}
       <main className="container mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
         {/* Emoji selector */}
-        <div className="relative mb-12">
+        <div className="relative mb-8">
           <button
             onClick={() => setIsPickerOpen(!isPickerOpen)}
-            className={`text-6xl sm:text-7xl hover:scale-110 transition-transform duration-300 ${colors.text}`}
+            className={`text-6xl sm:text-7xl hover:scale-110 transition-transform duration-300 ${colors.text} ${isPickerOpen ? 'translate-y-[-150px]' : ''}`}
             aria-label={isPickerOpen ? "Close emoji picker" : "Open emoji picker"}
           >
             {selectedEmoji}
           </button>
           {isPickerOpen && (
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 z-50">
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-[-120px] z-50">
               <EmojiPicker onEmojiSelect={handleEmojiSelect} />
             </div>
           )}
