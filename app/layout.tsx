@@ -23,9 +23,9 @@ export default function RootLayout({
       <body className={`${inter.className} ${handwriting.variable} antialiased`}>
         <UnderlineNavigation />
         {children}
+        <BuyMeCoffeeButton />
         <Analytics />
         <SpeedInsights />
-        <BuyMeCoffeeButton />
       </body>
     </html>
   )
