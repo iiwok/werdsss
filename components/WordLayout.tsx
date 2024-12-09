@@ -5,6 +5,7 @@ import { getWordFromEmoji } from '@/app/actions'
 import { getPageColors } from '@/lib/colors'
 import { EmojiPicker } from '@/components/EmojiPicker'
 import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 interface WordData {
   word: string
@@ -91,6 +92,7 @@ export default function WordLayout({ pagePath }: WordLayoutProps) {
         </div>
       </main>
       <Analytics />
+      <SpeedInsights />
     </div>
   )
 } 
