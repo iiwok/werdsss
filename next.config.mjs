@@ -2,7 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // Add any other custom configurations here
+  env: {
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  }
 }
 
 export default nextConfig
