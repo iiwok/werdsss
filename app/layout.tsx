@@ -2,6 +2,8 @@ import { Inter } from 'next/font/google'
 import localFont from 'next/font/local'
 import { UnderlineNavigation } from '@/components/NavDropdown'
 import './globals.css'
+import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,6 +22,8 @@ export default function RootLayout({
       <body className={`${inter.className} ${handwriting.variable} antialiased`}>
         <UnderlineNavigation />
         {children}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
