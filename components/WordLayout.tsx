@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { getWordFromEmoji } from '@/app/actions'
 import { getPageColors } from '@/lib/colors'
 import { EmojiPicker } from '@/components/EmojiPicker'
+import { Analytics } from "@vercel/analytics/react"
 
 interface WordData {
   word: string
@@ -89,6 +90,7 @@ export default function WordLayout({ pagePath }: WordLayoutProps) {
           )}
         </div>
       </main>
+      <Analytics />
     </div>
   )
 } 
