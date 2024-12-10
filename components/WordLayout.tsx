@@ -51,13 +51,11 @@ export default function WordLayout({ pagePath }: WordLayoutProps) {
       className={`min-h-screen w-full transition-colors duration-300 ${colors.background}`}
       style={{ minHeight: '100vh' }}
     >
-      {/* Navigation spacing */}
       <div className="h-16" />
       
-      {/* Main content */}
       <main className="container mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
-        {/* Emoji selector */}
-        <div className="relative mb-8">
+        {/* Emoji selector with message */}
+        <div className="relative mb-8 flex flex-col items-center">
           <button
             onClick={() => setIsPickerOpen(!isPickerOpen)}
             className={`text-6xl sm:text-7xl hover:scale-110 transition-transform duration-300 ${colors.text} ${isPickerOpen ? 'translate-y-[-150px]' : ''}`}
@@ -65,6 +63,9 @@ export default function WordLayout({ pagePath }: WordLayoutProps) {
           >
             {selectedEmoji}
           </button>
+          <p className={`mt-4 text-sm font-medium ${colors.text} opacity-75`}>
+            click + find your emoji
+          </p>
           {isPickerOpen && (
             <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-[-120px] z-50">
               <EmojiPicker onEmojiSelect={handleEmojiSelect} />
