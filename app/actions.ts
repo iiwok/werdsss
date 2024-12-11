@@ -74,7 +74,7 @@ export async function getWordFromEmoji(emoji: string, page: string = '/') {
         language: result.language || null,
         type: page === '/untranslatable' ? 'untranslatable' : 
               page === '/slang' ? 'slang' : 
-              'default'
+              'random'
       }
 
       logger.info('Attempting to save to Supabase:', wordData)

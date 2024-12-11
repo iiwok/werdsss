@@ -5,6 +5,7 @@ import './globals.css'
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import BuyMeCoffeeButton from '@/components/BuyMeCoffeeButton'
+import { headers } from 'next/headers'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -18,12 +19,20 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const headersList = headers()
+  const pathname = headersList.get('x-invoke-path') || ''
+  const isScreenshotPath = pathname.includes('/word/screenshot')
+
   return (
     <html lang="en">
       <body className={`${inter.className} ${handwriting.variable} antialiased`}>
-        <UnderlineNavigation />
+        {!isScreenshotPath && (
+          <>
+            <UnderlineNavigation />
+            <BuyMeCoffeeButton />
+          </>
+        )}
         {children}
-        <BuyMeCoffeeButton />
         <Analytics />
         <SpeedInsights />
       </body>

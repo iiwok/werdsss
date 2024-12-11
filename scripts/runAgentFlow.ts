@@ -1,5 +1,8 @@
 import { generatePost } from './generatePost'
 import { postToInstagram } from './postToInstagram'
+import * as dotenv from 'dotenv'
+
+dotenv.config({ path: '.env.local' })
 
 const FLOW_API_URL = process.env.FLOW_API_URL
 const FLOW_PREDICTION_ID = process.env.FLOW_PREDICTION_ID
@@ -9,7 +12,7 @@ async function askFlowAgent(word: any) {
     throw new Error('Missing Flow API configuration')
   }
 
-  const response = await fetch(`${FLOW_API_URL}/api/v1/prediction/${FLOW_PREDICTION_ID}`, {
+  const response = await fetch(`${FLOW_API_URL}/v1/prediction/${FLOW_PREDICTION_ID}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

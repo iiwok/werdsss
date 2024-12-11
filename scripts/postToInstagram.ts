@@ -1,89 +1,91 @@
 import fetch from 'node-fetch'
 import { createClient } from '@supabase/supabase-js'
-import puppeteer from 'puppeteer'
+import { getValidToken } from './tokenManager'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-async function uploadImage(imageUrl: string, word: any) {
-  // Instagram Graph API endpoint
-  const url = `https://graph.facebook.com/v18.0/me/media`
-  
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.INSTAGRAM_ACCESS_TOKEN}`
-    },
-    body: JSON.stringify({
-      image_url: imageUrl,
-      caption: generateCaption(word)
-    })
-  })
+export async function postToInstagram(word: any, imageUrl: string) {
+  try {
+    const accessToken = await getValidToken()
+    
+    // Create container first
+    const containerResponse = await fetch(
+      `https://graph.facebook.com/v18.0/${process.env.INSTAGRAM_PAGE_ID}/media`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          access_token: accessToken,
+          image_url: imageUrl,
+          caption: generateCaption(word)
+        }),
+      }
+    )
 
-  const data = await response.json()
-  
-  if (!data.id) {
-    throw new Error('Failed to create media container')
+    const containerData = await containerResponse.json()
+    console.log('Container Response:', containerData) // Debug log
+
+    if (!containerData.id) {
+      throw new Error(`Failed to create container: ${JSON.stringify(containerData)}`)
+    }
+
+    // Publish the post
+    const publishResponse = await fetch(
+      `https://graph.facebook.com/v18.0/${process.env.INSTAGRAM_PAGE_ID}/media_publish`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          access_token: accessToken,
+          creation_id: containerData.id
+        }),
+      }
+    )
+
+    const publishData = await publishResponse.json()
+    console.log('Publish Response:', publishData) // Debug log
+
+    if (publishData.id) {
+      await markAsPosted(word.id)
+      return true
+    }
+    
+    return false
+
+  } catch (error) {
+    console.error('Instagram API Error:', error)
+    return false
   }
-
-  // Publish the container
-  const publishResponse = await fetch(`https://graph.facebook.com/v18.0/me/media_publish`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.INSTAGRAM_ACCESS_TOKEN}`
-    },
-    body: JSON.stringify({
-      creation_id: data.id
-    })
-  })
-
-  return publishResponse.json()
 }
 
 function generateCaption(word: any) {
-  return `📚 Word of the Day: ${word.word}\n\n` +
-         `Definition: ${word.definition}\n\n` +
-         `#vocabulary #learning #words #language #education`
+  let caption = `📚 Word of the Day: ${word.word}\n\n`
+  caption += `Definition: ${word.definition}\n\n`
+  if (word.usage) {
+    caption += `Usage: ${word.usage}\n\n`
+  }
+  if (word.language) {
+    caption += `Language: ${word.language}\n\n`
+  }
+  caption += `#vocabulary #learning #words #language`
+  if (word.type === 'untranslatable') {
+    caption += ` #untranslatable #worldlanguages`
+  } else if (word.type === 'slang') {
+    caption += ` #slang #modernlanguage`
+  }
+  return caption
 }
 
 async function markAsPosted(wordId: string) {
   await supabase
-    .from('words')
+    .from('word_generations')
     .update({ posted_to_instagram: true })
     .eq('id', wordId)
-}
-
-export async function postToInstagram(word: any, screenshotUrl: string) {
-  try {
-    // Launch browser
-    const browser = await puppeteer.launch()
-    const page = await browser.newPage()
-    
-    // Navigate to screenshot page
-    await page.goto(screenshotUrl, { waitUntil: 'networkidle0' })
-    
-    // Take screenshot
-    const imageBuffer = await page.screenshot({
-      type: 'jpeg',
-      quality: 100
-    })
-
-    // Generate caption
-    const caption = `${word.word}\n\n${word.definition}\n\n${word.usage}\n\n#vocabulary #learning #words #language`
-    if (word.language) {
-      caption += ` #${word.language.toLowerCase()}`
-    }
-
-    // Post to Instagram using your existing function
-    // ... your Instagram posting code ...
-
-    await browser.close()
-    return true
-
-  } catch (error) {
-    console.error('Failed to post to Instagram:', error)
-    return false
-  }
 } 

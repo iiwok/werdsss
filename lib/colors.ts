@@ -13,4 +13,27 @@ export const defaultColorCombo = pageColors['/']
 
 export const getPageColors = (path: string = '/'): ColorCombo => {
   return pageColors[path] || defaultColorCombo
+}
+
+export function getRandomColors() {
+  const colorSchemes = [
+    {
+      background: 'bg-slate-900',
+      text: 'text-slate-100'
+    },
+    {
+      background: 'bg-zinc-900',
+      text: 'text-zinc-100'
+    },
+    {
+      background: 'bg-neutral-900',
+      text: 'text-neutral-100'
+    },
+    {
+      background: 'bg-stone-900',
+      text: 'text-stone-100'
+    }
+  ]
+
+  return colorSchemes[Math.floor(Math.random() * colorSchemes.length)]
 } 

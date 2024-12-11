@@ -1,65 +1,32 @@
-import { getWord } from '@/app/actions'
-import { getPageColors } from '@/lib/colors'
-
-// Match your app's color themes
-const themes = {
-  default: {
-    background: 'bg-[#FFF7ED]',
-    text: 'text-[#C2410C]'
-  },
-  untranslatable: {
-    background: 'bg-[#FDF7E4]',
-    text: 'text-[#1E40AF]'
-  },
-  slang: {
-    background: 'bg-[#F0F9FF]',
-    text: 'text-[#DB2777]'
-  }
-}
+import { supabase } from '@/lib/supabase'
+import { getPageColors } from '@/utils/colors'
 
 export default async function WordScreenshotPage({ params }: { params: { id: string } }) {
-  const word = await getWord(params.id)
-  if (!word) return null
+  const { data: word } = await supabase
+    .from('word_generations')
+    .select('*')
+    .eq('id', params.id)
+    .single()
 
-  const theme = themes[word.type as keyof typeof themes] || themes.default
+  // Get colors based on word type
+  const path = word.type === 'untranslatable' ? '/untranslatable' : 
+               word.type === 'slang' ? '/slang' : '/'
+  const colors = getPageColors(path)
 
   return (
-    <div id="word-card" className={`fixed inset-0 w-[1080px] h-[1080px] mx-auto flex items-center justify-center ${theme.background}`}>
-      <div className="flex flex-col items-center justify-center h-full w-full px-16 relative">
-        <div className="flex flex-col items-center gap-8 max-w-3xl">
-          {/* Word */}
-          <h2 className={`text-6xl font-semibold text-center ${theme.text}`}>
-            {word.word}
-          </h2>
-          
-          {/* Language (for untranslatable words) */}
-          {word.language && (
-            <p className={`text-3xl ${theme.text}`}>
-              {word.language}
-            </p>
+    <main className={`min-h-screen ${colors.background} py-24`}>
+      <div className="container mx-auto px-8 md:px-12">
+        <div className="max-w-3xl mx-auto text-center space-y-6 scale-125">
+          {word.emoji && (
+            <div className="text-6xl mb-4">{word.emoji}</div>
           )}
-          
-          {/* Pronunciation */}
-          <p className={`text-3xl ${theme.text}`}>
-            {word.pronunciation}
-          </p>
-          
-          {/* Definition */}
-          <p className={`text-2xl text-center ${theme.text}`}>
-            {word.definition}
-          </p>
-          
-          {/* Usage */}
-          <p className={`text-xl italic text-center ${theme.text}`}>
-            {word.usage}
-          </p>
-        </div>
-        
-        {/* Branding */}
-        <div className={`absolute bottom-16 text-xl ${theme.text} opacity-75`}>
-          @learn_werdsss
+          <h1 className={`text-5xl md:text-6xl font-handwriting ${colors.text} break-words`}>{word.word}</h1>
+          <p className={`text-xl md:text-2xl font-handwriting ${colors.text} opacity-80 break-words`}>{word.definition}</p>
+          {word.usage && (
+            <p className={`text-lg md:text-xl italic font-handwriting ${colors.text} opacity-60 break-words`}>"{word.usage}"</p>
+          )}
         </div>
       </div>
-    </div>
+    </main>
   )
-} 
+}

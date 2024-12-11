@@ -1,13 +1,10 @@
-import { Lora } from 'next/font/google'
+import localFont from 'next/font/local'
+import '../../globals.css'
 
-const lora = Lora({ 
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+const handwriting = localFont({
+  src: '../../fonts/LORE.ttf',
+  variable: '--font-handwriting'
 })
-
-export const metadata = {
-  layout: 'empty'
-}
 
 export default function ScreenshotLayout({
   children,
@@ -15,8 +12,8 @@ export default function ScreenshotLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={lora.className}>
-      <body className="overflow-hidden">
+    <html lang="en">
+      <body className={`${handwriting.variable} overflow-hidden`}>
         {children}
       </body>
     </html>
