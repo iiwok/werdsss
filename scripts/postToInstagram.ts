@@ -66,20 +66,24 @@ export async function postToInstagram(word: any, imageUrl: string) {
 }
 
 function generateCaption(word: any) {
-  let caption = `📚 Word of the Day: ${word.word}\n\n`
-  caption += `Definition: ${word.definition}\n\n`
+  let caption = `${word.emoji} ${word.word}: ${word.definition}\n\n`
+  
   if (word.usage) {
-    caption += `Usage: ${word.usage}\n\n`
+    caption += `"${word.usage}"\n\n`
   }
-  if (word.language) {
-    caption += `Language: ${word.language}\n\n`
-  }
-  caption += `#vocabulary #learning #words #language`
+
+  // Base hashtags
+  caption += `#werdsss #vocabulary #wordoftheday #language #learning`
+
+  // Type-specific hashtags
   if (word.type === 'untranslatable') {
-    caption += ` #untranslatable #worldlanguages`
+    caption += ` #untranslatable #worldlanguages #${word.language?.toLowerCase() || 'languages'}`
   } else if (word.type === 'slang') {
-    caption += ` #slang #modernlanguage`
+    caption += ` #slang #genz #internetculture`
+  } else {
+    caption += ` #words #etymology #neologism`
   }
+
   return caption
 }
 

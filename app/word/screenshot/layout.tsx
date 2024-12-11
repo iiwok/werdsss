@@ -12,10 +12,8 @@ export default function ScreenshotLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={`${handwriting.variable} overflow-hidden`}>
-        {children}
-      </body>
-    </html>
+    <div className={`${handwriting.variable}`}>
+      {children}
+    </div>
   )
 } 

@@ -5,15 +5,19 @@
   "installCommand": "npm install",
   "crons": [
     {
-      "path": "/api/cron/random",
+      "path": "/api/daily-generate",
+      "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/generate-random",
       "schedule": "0 15 * * *"
     },
     {
-      "path": "/api/cron/untranslatable",
+      "path": "/api/generate-untranslatable",
       "schedule": "0 20 * * *"
     },
     {
-      "path": "/api/cron/slang",
+      "path": "/api/generate-slang",
       "schedule": "0 0 * * *"
     }
   ],
