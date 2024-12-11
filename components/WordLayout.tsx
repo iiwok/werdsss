@@ -19,8 +19,6 @@ interface WordLayoutProps {
 
 export default function WordLayout({ pagePath }: WordLayoutProps) {
   const colors = getPageColors(pagePath)
-  console.log('Current path:', pagePath)
-  console.log('Applied colors:', colors)
   const [wordData, setWordData] = useState<WordData | null>(null)
   const [selectedEmoji, setSelectedEmoji] = useState<string>('😊')
   const [isPickerOpen, setIsPickerOpen] = useState(false)
@@ -32,6 +30,7 @@ export default function WordLayout({ pagePath }: WordLayoutProps) {
     setIsLoading(true)
     try {
       const data = await getWordFromEmoji(emoji, pagePath)
+      console.log('Received data:', data) // Debug log
       setWordData(data)
     } catch (error) {
       console.error('Error fetching word:', error)
@@ -54,7 +53,7 @@ export default function WordLayout({ pagePath }: WordLayoutProps) {
       <div className="h-16" />
       
       <main className="container mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
-        {/* Emoji selector with message */}
+        {/* Emoji selector */}
         <div className="relative mb-8 flex flex-col items-center">
           <button
             onClick={() => setIsPickerOpen(!isPickerOpen)}
@@ -77,17 +76,25 @@ export default function WordLayout({ pagePath }: WordLayoutProps) {
         <div className={`w-full max-w-2xl mx-auto text-center ${colors.text}`}>
           {isLoading ? (
             <p className="text-3xl font-handwriting animate-pulse">Loading...</p>
-          ) : wordData && (
+          ) : wordData ? (
             <div className="space-y-6 font-handwriting">
-              <h2 className="text-5xl sm:text-6xl font-bold break-words">{wordData.word}</h2>
+              <h2 className="text-5xl sm:text-6xl font-bold break-words">
+                {wordData.word || 'No word found'}
+              </h2>
               {wordData.language && (
                 <p className="text-2xl sm:text-3xl">{wordData.language}</p>
               )}
-              <p className="text-2xl sm:text-3xl">{wordData.pronunciation}</p>
-              <p className="text-xl sm:text-2xl">{wordData.definition}</p>
-              <p className="text-lg sm:text-xl italic">{wordData.usage}</p>
+              <p className="text-2xl sm:text-3xl">
+                {wordData.pronunciation || 'No pronunciation available'}
+              </p>
+              <p className="text-xl sm:text-2xl">
+                {wordData.definition || 'No definition available'}
+              </p>
+              <p className="text-lg sm:text-xl italic">
+                {wordData.usage || 'No usage available'}
+              </p>
             </div>
-          )}
+          ) : null}
         </div>
       </main>
     </div>

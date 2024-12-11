@@ -1,7 +1,7 @@
 'use server'
 
 import OpenAI from 'openai';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase'
 
 // Add Message type
 interface Message {
@@ -23,6 +23,10 @@ const PROMPTS = {
 }
 
 export async function getWordFromEmoji(emoji: string, page: string = '/') {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OpenAI API key is not configured')
+  }
+
   console.log('Generating word for emoji:', emoji)
   try {
     let prompt = PROMPTS.default
@@ -44,23 +48,54 @@ export async function getWordFromEmoji(emoji: string, page: string = '/') {
       temperature: 0.7,
     });
 
-    const result = JSON.parse(completion.choices[0].message.content!)
-    
-    // Track the generation with all word details
-    await supabase.from('word_generations').insert({
-      word: result.word,
-      type: page === '/' ? 'random' : page.replace('/', ''),
-      emoji: emoji,
-      pronunciation: result.pronunciation,
-      definition: result.definition,
-      usage: result.usage,
-      language: result.language || null, // only present for untranslatable words
-    });
+    if (!completion.choices[0].message.content) {
+      throw new Error('No content received from OpenAI')
+    }
+
+    let result;
+    try {
+      result = JSON.parse(completion.choices[0].message.content)
+    } catch (parseError) {
+      console.error('Failed to parse OpenAI response:', completion.choices[0].message.content)
+      throw new Error('Invalid response format from OpenAI')
+    }
 
     console.log('OpenAI response:', result)
-    return result
+
+    try {
+      const wordData = { 
+        word: result.word,
+        definition: result.definition,
+        pronunciation: result.pronunciation,
+        usage: result.usage,
+        emoji: emoji,
+        posted_to_instagram: false,
+        language: result.language || null,
+        type: page === '/untranslatable' ? 'untranslatable' : 
+              page === '/slang' ? 'slang' : 
+              'default'
+      }
+
+      console.log('Attempting to save to Supabase:', wordData)
+
+      const { data, error } = await supabase
+        .from('word_generations')
+        .insert(wordData)
+        .select()
+
+      if (error) {
+        console.error('Supabase Error Details:', error)
+        throw new Error(`Database error: ${error.message}`)
+      }
+
+      console.log('Successfully saved to Supabase:', data)
+      return result
+    } catch (dbError) {
+      console.error('Full Database Error:', dbError)
+      throw dbError
+    }
   } catch (error) {
-    console.error('OpenAI Error:', error)
+    console.error('Full error:', error)
     throw error
   }
 }
@@ -85,4 +120,15 @@ export async function generateResponse(messages: Message[], page: string = '/') 
   const result = JSON.parse(response.choices[0].message.content!)
   console.log('OpenAI response:', result)
   return result
+}
+
+export async function getWord(id: string) {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('words')
+    .select('*')
+    .eq('id', id)
+    .single()
+  
+  return data
 } 

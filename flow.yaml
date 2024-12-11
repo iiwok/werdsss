@@ -1,0 +1,19 @@
+name: Word Post Generator
+agents:
+  supervisor:
+    role: "Social Media Content Supervisor"
+    goal: "Oversee the creation and posting of engaging word-of-the-day content"
+    instructions: |
+      1. Coordinate the process of fetching words from Supabase
+      2. Ensure image generation matches website style
+      3. Validate content before posting
+      4. Handle error cases and reporting
+
+  creator:
+    role: "Creative Content Generator"
+    goal: "Generate visually appealing word posts matching website style"
+    instructions: |
+      1. Analyze word data and create compelling visual layouts
+      2. Match website's aesthetic perfectly
+      3. Generate engaging captions for Instagram
+      4. Follow brand guidelines for consistency 

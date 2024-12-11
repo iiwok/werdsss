@@ -5,20 +5,16 @@
   "installCommand": "npm install",
   "crons": [
     {
-      "path": "/api/cron/random",
-      "schedule": "0 0 15 * * *"
-    },
-    {
-      "path": "/api/cron/untranslatable",
-      "schedule": "0 5 15 * * *"
-    },
-    {
-      "path": "/api/cron/slang",
-      "schedule": "0 9 15 * * *"
+      "path": "/api/run-agent-flow",
+      "schedule": "0 15 * * *"
     }
   ],
   "env": {
     "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key"
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
+    "OPENAI_API_KEY": "@openai_api_key",
+    "INSTAGRAM_ACCESS_TOKEN": "@instagram_access_token",
+    "INSTAGRAM_PAGE_ID": "@instagram_page_id",
+    "TEST_IMAGE_URL": "@test_image_url"
   }
 }
