@@ -5,8 +5,16 @@
   "installCommand": "npm install",
   "crons": [
     {
-      "path": "/api/run-agent-flow",
+      "path": "/api/cron/random",
       "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron/untranslatable",
+      "schedule": "0 20 * * *"
+    },
+    {
+      "path": "/api/cron/slang",
+      "schedule": "0 0 * * *"
     }
   ],
   "env": {

@@ -2,6 +2,7 @@
 
 import OpenAI from 'openai';
 import { supabase } from '@/lib/supabase'
+import { logger } from '@/lib/logger'
 
 // Add Message type
 interface Message {
@@ -27,7 +28,7 @@ export async function getWordFromEmoji(emoji: string, page: string = '/') {
     throw new Error('OpenAI API key is not configured')
   }
 
-  console.log('Generating word for emoji:', emoji)
+  logger.info('Generating word for emoji:', emoji)
   try {
     let prompt = PROMPTS.default
     if (page === '/untranslatable') prompt = PROMPTS.untranslatable
@@ -56,11 +57,11 @@ export async function getWordFromEmoji(emoji: string, page: string = '/') {
     try {
       result = JSON.parse(completion.choices[0].message.content)
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', completion.choices[0].message.content)
+      logger.error('Failed to parse OpenAI response:', completion.choices[0].message.content)
       throw new Error('Invalid response format from OpenAI')
     }
 
-    console.log('OpenAI response:', result)
+    logger.info('OpenAI response:', result)
 
     try {
       const wordData = { 
@@ -76,7 +77,7 @@ export async function getWordFromEmoji(emoji: string, page: string = '/') {
               'default'
       }
 
-      console.log('Attempting to save to Supabase:', wordData)
+      logger.info('Attempting to save to Supabase:', wordData)
 
       const { data, error } = await supabase
         .from('word_generations')
@@ -84,18 +85,18 @@ export async function getWordFromEmoji(emoji: string, page: string = '/') {
         .select()
 
       if (error) {
-        console.error('Supabase Error Details:', error)
+        logger.error('Supabase Error Details:', error)
         throw new Error(`Database error: ${error.message}`)
       }
 
-      console.log('Successfully saved to Supabase:', data)
+      logger.info('Successfully saved to Supabase:', data)
       return result
     } catch (dbError) {
-      console.error('Full Database Error:', dbError)
+      logger.error('Database Error:', dbError)
       throw dbError
     }
   } catch (error) {
-    console.error('Full error:', error)
+    logger.error('Full error:', error)
     throw error
   }
 }
@@ -118,7 +119,7 @@ export async function generateResponse(messages: Message[], page: string = '/') 
   })
 
   const result = JSON.parse(response.choices[0].message.content!)
-  console.log('OpenAI response:', result)
+  logger.info('OpenAI response:', result)
   return result
 }
 

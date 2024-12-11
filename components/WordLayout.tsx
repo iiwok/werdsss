@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { getWordFromEmoji } from '@/app/actions'
 import { getPageColors } from '@/lib/colors'
 import { EmojiPicker } from '@/components/EmojiPicker'
+import { logger } from '@/lib/logger'
 
 interface WordData {
   word: string
@@ -30,6 +31,8 @@ export default function WordLayout({ pagePath }: WordLayoutProps) {
     setIsLoading(true)
     try {
       const data = await getWordFromEmoji(emoji, pagePath)
+      logger.debug('Current path:', pagePath)
+      logger.debug('Applied colors:', colors)
       console.log('Received data:', data) // Debug log
       setWordData(data)
     } catch (error) {

@@ -1,14 +1,30 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { generatePost } from '@/scripts/generatePost'
 import { postToInstagram } from '@/scripts/postToInstagram'
 
-export async function GET() {
+// Type validation
+const validTypes = ['random', 'untranslatable', 'slang'] as const
+type ValidType = typeof validTypes[number]
+
+export async function GET(
+  request: Request,
+  { params }: { params: { type: string } }
+) {
   try {
-    // Get next unpublished word
+    // Validate type
+    const type = params.type as ValidType
+    if (!validTypes.includes(type)) {
+      return NextResponse.json({ 
+        error: 'Invalid type',
+        message: `Type must be one of: ${validTypes.join(', ')}`
+      }, { status: 400 })
+    }
+
+    // Get next unpublished word of specific type
     const { data: word, error } = await supabase
       .from('word_generations')
       .select('*')
+      .eq('type', type)
       .eq('posted_to_instagram', false)
       .order('created_at', { ascending: true })
       .limit(1)
@@ -16,12 +32,14 @@ export async function GET() {
 
     if (error) throw error
     if (!word) {
-      return NextResponse.json({ message: 'No unpublished words found' })
+      return NextResponse.json({ 
+        message: `No unpublished ${type} words found` 
+      })
     }
 
     // Generate screenshot
     const screenshotUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/word/screenshot/${word.id}`
-    console.log('Generating screenshot for:', screenshotUrl)
+    console.log(`Generating screenshot for ${type} word:`, screenshotUrl)
 
     // Post to Instagram
     const success = await postToInstagram(word, screenshotUrl)
@@ -38,6 +56,7 @@ export async function GET() {
 
     return NextResponse.json({
       message: success ? 'Posted successfully' : 'Failed to post',
+      type,
       word,
       screenshotUrl
     })

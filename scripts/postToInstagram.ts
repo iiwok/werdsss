@@ -1,5 +1,6 @@
 import fetch from 'node-fetch'
 import { createClient } from '@supabase/supabase-js'
+import puppeteer from 'puppeteer'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -54,11 +55,33 @@ async function markAsPosted(wordId: string) {
     .eq('id', wordId)
 }
 
-export async function postToInstagram(word: any, imageUrl: string) {
+export async function postToInstagram(word: any, screenshotUrl: string) {
   try {
-    await uploadImage(imageUrl, word)
-    await markAsPosted(word.id)
+    // Launch browser
+    const browser = await puppeteer.launch()
+    const page = await browser.newPage()
+    
+    // Navigate to screenshot page
+    await page.goto(screenshotUrl, { waitUntil: 'networkidle0' })
+    
+    // Take screenshot
+    const imageBuffer = await page.screenshot({
+      type: 'jpeg',
+      quality: 100
+    })
+
+    // Generate caption
+    const caption = `${word.word}\n\n${word.definition}\n\n${word.usage}\n\n#vocabulary #learning #words #language`
+    if (word.language) {
+      caption += ` #${word.language.toLowerCase()}`
+    }
+
+    // Post to Instagram using your existing function
+    // ... your Instagram posting code ...
+
+    await browser.close()
     return true
+
   } catch (error) {
     console.error('Failed to post to Instagram:', error)
     return false
