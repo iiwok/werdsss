@@ -123,9 +123,8 @@ export async function generateResponse(messages: Message[], page: string = '/') 
 }
 
 export async function getWord(id: string) {
-  const supabase = createClient()
   const { data } = await supabase
-    .from('words')
+    .from('word_generations')
     .select('*')
     .eq('id', id)
     .single()
