@@ -1,6 +1,7 @@
 'use server'
 
 import OpenAI from 'openai';
+import { supabase } from '@/lib/supabase';
 
 // Add Message type
 interface Message {
@@ -44,6 +45,18 @@ export async function getWordFromEmoji(emoji: string, page: string = '/') {
     });
 
     const result = JSON.parse(completion.choices[0].message.content!)
+    
+    // Track the generation with all word details
+    await supabase.from('word_generations').insert({
+      word: result.word,
+      type: page === '/' ? 'random' : page.replace('/', ''),
+      emoji: emoji,
+      pronunciation: result.pronunciation,
+      definition: result.definition,
+      usage: result.usage,
+      language: result.language || null, // only present for untranslatable words
+    });
+
     console.log('OpenAI response:', result)
     return result
   } catch (error) {
