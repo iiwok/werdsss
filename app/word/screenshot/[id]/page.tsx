@@ -14,9 +14,9 @@ export default async function WordScreenshotPage({ params }: { params: { id: str
   const colors = getPageColors(path)
 
   return (
-    <main className={`min-h-screen ${colors.background} py-24`}>
-      <div className="container mx-auto px-8 md:px-12">
-        <div className="max-w-3xl mx-auto text-center space-y-6 scale-125">
+    <div className={`h-[800px] overflow-hidden ${colors.background}`}>
+      <div className="container mx-auto px-8 md:px-12 h-full flex items-center -mt-8">
+        <div className="max-w-3xl mx-auto text-center space-y-6 scale-125 w-full">
           {word.emoji && (
             <div className="text-6xl mb-4">{word.emoji}</div>
           )}
@@ -27,6 +27,6 @@ export default async function WordScreenshotPage({ params }: { params: { id: str
           )}
         </div>
       </div>
-    </main>
+    </div>
   )
 }
