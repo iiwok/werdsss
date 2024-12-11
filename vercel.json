@@ -27,6 +27,7 @@
     "OPENAI_API_KEY": "@openai_api_key",
     "INSTAGRAM_ACCESS_TOKEN": "@instagram_access_token",
     "INSTAGRAM_PAGE_ID": "@instagram_page_id",
-    "TEST_IMAGE_URL": "@test_image_url"
+    "TEST_IMAGE_URL": "@test_image_url",
+    "CRON_SECRET": "@cron_secret"
   }
 }

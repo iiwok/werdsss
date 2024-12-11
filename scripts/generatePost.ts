@@ -21,6 +21,7 @@ interface Word {
 }
 
 async function getUnpostedWord(): Promise<Word> {
+  console.log('Fetching unposted word...')
   const { data, error } = await supabase
     .from('word_generations')
     .select('*')
@@ -29,10 +30,21 @@ async function getUnpostedWord(): Promise<Word> {
     .limit(1)
     .single()
 
-  if (error) throw error
-  if (!data) throw new Error('No unposted words found')
+  if (error) {
+    console.error('Error fetching word:', error)
+    throw error
+  }
+  if (!data) {
+    console.error('No data returned from query')
+    throw new Error('No unposted words found')
+  }
   
-  console.log('Found unposted word:', data.word)
+  console.log('Found unposted word:', {
+    id: data.id,
+    word: data.word,
+    type: data.type,
+    url: `${process.env.NEXT_PUBLIC_BASE_URL}/word/screenshot/${data.id}`
+  })
   return data
 }
 
@@ -40,42 +52,85 @@ async function captureWordImage(word: Word): Promise<string> {
   const browser = await puppeteer.launch({
     headless: 'new'
   })
-  const page = await browser.newPage()
   
-  await page.setViewport({ width: 1080, height: 1080 })
-  
-  await page.goto(`${process.env.NEXT_PUBLIC_BASE_URL}/word/screenshot/${word.id}`, {
-    waitUntil: 'networkidle0'
-  })
-  
-  await page.waitForSelector('#word-card', { timeout: 60000 })
-  
-  const element = await page.$('#word-card')
-  if (!element) throw new Error('Word card not found')
-  
-  const buffer = await element.screenshot({
-    type: 'png'
-  })
-
-  await browser.close()
-
-  // Upload to Supabase
-  const fileName = `${word.word}-${Date.now()}.png`
-  const { error } = await supabase.storage
-    .from('instagram-posts')
-    .upload(fileName, buffer, {
-      contentType: 'image/png',
-      cacheControl: '3600'
+  try {
+    const page = await browser.newPage()
+    page.on('console', msg => console.log('PAGE LOG:', msg.text()))
+    page.on('error', err => console.log('PAGE ERROR:', err))
+    page.on('pageerror', err => console.log('PAGE ERROR:', err))
+    
+    await page.setViewport({ width: 1080, height: 1080 })
+    
+    const url = `${process.env.NEXT_PUBLIC_BASE_URL}/word/screenshot/${word.id}`
+    console.log('Loading screenshot page:', url)
+    
+    await page.goto(url, {
+      waitUntil: ['networkidle0', 'domcontentloaded'],
+      timeout: 90000
+    })
+    
+    // Debug what's on the page
+    const content = await page.content()
+    console.log('Page HTML:', content)
+    
+    // Check if element exists at all
+    const elementExists = await page.evaluate(() => {
+      const el = document.querySelector('#word-card')
+      console.log('Element found:', el ? 'yes' : 'no')
+      console.log('All IDs on page:', Array.from(document.querySelectorAll('[id]')).map(el => el.id))
+      return !!el
+    })
+    
+    console.log('Element exists:', elementExists)
+    
+    console.log('Waiting for word card to render...')
+    await page.waitForSelector('#word-card', { 
+      visible: true,
+      timeout: 90000 
+    })
+    
+    const element = await page.$('#word-card')
+    if (!element) throw new Error('Word card not found')
+    
+    console.log('Capturing screenshot...')
+    const buffer = await element.screenshot({
+      type: 'png'
     })
 
-  if (error) throw error
+    console.log('Uploading to Supabase...')
+    const fileName = `${word.word}-${Date.now()}.png`
+    
+    try {
+      const { data, error } = await supabase.storage
+        .from('instagram-posts')
+        .upload(fileName, buffer, {
+          contentType: 'image/png',
+          cacheControl: '3600',
+          upsert: true
+        })
 
-  // Get public URL
-  const { data: { publicUrl } } = supabase.storage
-    .from('instagram-posts')
-    .getPublicUrl(fileName)
+      if (error) {
+        console.error('Supabase storage error:', error)
+        throw error
+      }
 
-  return publicUrl
+      console.log('Upload successful:', data)
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('instagram-posts')
+        .getPublicUrl(fileName)
+
+      console.log('Generated public URL:', publicUrl)
+      return publicUrl
+      
+    } catch (uploadError) {
+      console.error('Failed to upload to Supabase:', uploadError)
+      throw uploadError
+    }
+
+  } finally {
+    await browser.close()
+  }
 }
 
 export async function generatePost(): Promise<{ word: Word; imageUrl: string }> {

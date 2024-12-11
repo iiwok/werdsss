@@ -20,6 +20,11 @@ export async function GET(
       }, { status: 400 })
     }
 
+    const cronSecret = request.headers.get('x-cron-secret')
+    if (process.env.NODE_ENV === 'production' && cronSecret !== process.env.CRON_SECRET) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     // Get next unpublished word of specific type
     const { data: word, error } = await supabase
       .from('word_generations')

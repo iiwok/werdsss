@@ -2,14 +2,34 @@ import fetch from 'node-fetch'
 import { createClient } from '@supabase/supabase-js'
 import { getValidToken } from './tokenManager'
 
+// Validate all required environment variables
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  throw new Error('Missing SUPABASE_URL environment variable')
+}
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable')
+}
+if (!process.env.INSTAGRAM_PAGE_ID) {
+  throw new Error('Missing INSTAGRAM_PAGE_ID environment variable')
+}
+
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
 export async function postToInstagram(word: any, imageUrl: string) {
+  if (!word || !imageUrl) {
+    throw new Error('Missing required parameters: word or imageUrl')
+  }
+
   try {
     const accessToken = await getValidToken()
+    if (!accessToken) {
+      throw new Error('Failed to get valid Instagram access token')
+    }
+    
+    console.log('Attempting to post:', { word: word.word, imageUrl })
     
     // Create container first
     const containerResponse = await fetch(
@@ -28,7 +48,11 @@ export async function postToInstagram(word: any, imageUrl: string) {
     )
 
     const containerData = await containerResponse.json()
-    console.log('Container Response:', containerData) // Debug log
+    console.log('Container Response:', JSON.stringify(containerData, null, 2))
+
+    if (containerData.error) {
+      throw new Error(`Container Error: ${JSON.stringify(containerData.error)}`)
+    }
 
     if (!containerData.id) {
       throw new Error(`Failed to create container: ${JSON.stringify(containerData)}`)
