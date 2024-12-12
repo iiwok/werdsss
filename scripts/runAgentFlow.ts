@@ -12,23 +12,56 @@ async function askFlowAgent(word: any) {
     throw new Error('Missing Flow API configuration')
   }
 
-  const response = await fetch(`${FLOW_API_URL}/v1/prediction/${FLOW_PREDICTION_ID}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      question: `Generate a social media post for the word "${word.word}" with definition "${word.definition}"`
+  console.log('Flow API URL:', FLOW_API_URL)
+  console.log('Flow Prediction ID:', FLOW_PREDICTION_ID)
+
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 30000) // 30s timeout
+
+    const response = await fetch(`${FLOW_API_URL}/v1/prediction/${FLOW_PREDICTION_ID}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        question: `Generate a social media post for the word "${word.word}" with definition "${word.definition}"`
+      }),
+      signal: controller.signal
     })
-  })
-  
-  return await response.json()
+    
+    clearTimeout(timeout)
+    
+    if (!response.ok) {
+      throw new Error(`Flow API error: ${response.status} ${response.statusText}`)
+    }
+    
+    return await response.json()
+  } catch (error) {
+    console.error('Flow Agent error:', error)
+    // Return a default response to continue the flow
+    return { text: `Check out today's word: ${word.word}! ${word.definition}` }
+  }
 }
 
 async function runFlow() {
+  console.log('Auto-posting status:', process.env.AUTO_POSTING_ENABLED)
+  
+  if (process.env.AUTO_POSTING_ENABLED !== 'true') {
+    console.log('Auto-posting is disabled')
+    process.exit(0)
+    return
+  }
+
   try {
+    console.log('Starting post generation...')
     const { word, imageUrl } = await generatePost()
+    
+    console.log('Starting Flow Agent...')
     const agentResponse = await askFlowAgent(word)
+    console.log('Flow Agent response:', agentResponse)
+    
+    console.log('Attempting Instagram post...')
     const success = await postToInstagram(word, imageUrl)
     
     if (success) {
@@ -39,6 +72,7 @@ async function runFlow() {
   } catch (error) {
     console.error('Flow failed:', error)
   }
+  process.exit(0)
 }
 
 runFlow() 

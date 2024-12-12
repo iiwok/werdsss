@@ -3,43 +3,51 @@ import { supabase } from '@/lib/supabase'
 import { generatePost } from '@/scripts/generatePost'
 import { postToInstagram } from '@/scripts/postToInstagram'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    // Get next unpublished word
-    const { data: word, error } = await supabase
-      .from('word_generations')
-      .select('*')
-      .eq('posted_to_instagram', false)
-      .order('created_at', { ascending: true })
-      .limit(1)
-      .single()
-
-    if (error) throw error
-    if (!word) {
-      return NextResponse.json({ message: 'No unpublished words found' })
+    // Check if this is being called directly or from our script
+    const isDirectCall = !request.headers.get('x-from-script')
+    
+    let word, imageUrl
+    
+    if (isDirectCall) {
+      // Only generate if called directly (not from our script)
+      const result = await generatePost()
+      word = result.word
+      imageUrl = result.imageUrl
+    } else {
+      // Get data from request when called from script
+      const searchParams = new URL(request.url).searchParams
+      word = JSON.parse(searchParams.get('word') || '{}')
+      imageUrl = searchParams.get('imageUrl')
+      
+      if (!word.id || !imageUrl) {
+        throw new Error('Missing required data from script')
+      }
     }
 
-    // Generate screenshot
-    const screenshotUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/word/screenshot/${word.id}`
-    console.log('Generating screenshot for:', screenshotUrl)
+    console.log('Post Data:', {
+      word: word.word,
+      imageUrl: imageUrl.substring(0, 50) + '...'
+    })
 
     // Post to Instagram
-    const success = await postToInstagram(word, screenshotUrl)
+    const success = await postToInstagram(word, imageUrl)
 
     if (success) {
-      // Update word as posted
       const { error: updateError } = await supabase
         .from('word_generations')
         .update({ posted_to_instagram: true })
         .eq('id', word.id)
 
       if (updateError) throw updateError
+      console.log('Successfully marked as posted:', word.word)
     }
 
     return NextResponse.json({
       message: success ? 'Posted successfully' : 'Failed to post',
       word,
-      screenshotUrl
+      imageUrl
     })
 
   } catch (error) {
