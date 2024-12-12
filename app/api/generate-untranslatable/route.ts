@@ -7,7 +7,7 @@ export async function GET() {
     // Get an untranslatable word that hasn't been posted
     const { data: word } = await supabase
       .from('word_generations')
-      .select('*')
+      .select('*, emoji')
       .eq('type', 'untranslatable')
       .eq('posted', false)
       .limit(1)

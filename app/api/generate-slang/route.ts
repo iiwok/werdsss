@@ -7,7 +7,7 @@ export async function GET() {
     // Get a slang word that hasn't been posted
     const { data: word } = await supabase
       .from('word_generations')
-      .select('*')
+      .select('*, emoji')
       .eq('type', 'slang')
       .eq('posted', false)
       .limit(1)
