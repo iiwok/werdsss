@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { postToInstagram } from '@/lib/instagram'
 
 export async function GET() {
   try {
     // Get a random word that hasn't been posted
-    const { data: word } = await supabase
+    const { data: word } = await supabaseAdmin
       .from('word_generations')
       .select('*, emoji')
       .eq('type', 'random')
-      .eq('posted', false)
+      .eq('posted_to_instagram', false)
       .limit(1)
       .single()
 
@@ -21,10 +21,15 @@ export async function GET() {
     await postToInstagram(word)
 
     // Mark as posted
-    await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('word_generations')
-      .update({ posted: true })
+      .update({ posted_to_instagram: true })
       .eq('id', word.id)
+
+    if (updateError) {
+      console.error('Failed to update word status:', updateError)
+      return NextResponse.json({ error: 'Failed to update status' }, { status: 500 })
+    }
 
     return NextResponse.json({ success: true, word })
   } catch (error) {

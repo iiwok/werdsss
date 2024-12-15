@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { getValidToken } from './tokenManager'
 
 // Validate all required environment variables
@@ -12,11 +12,6 @@ if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
 if (!process.env.INSTAGRAM_PAGE_ID) {
   throw new Error('Missing INSTAGRAM_PAGE_ID environment variable')
 }
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
 
 export async function postToInstagram(word: any, imageUrl: string) {
   if (!word || !imageUrl) {
@@ -112,7 +107,7 @@ function generateCaption(word: any) {
 }
 
 async function markAsPosted(wordId: string) {
-  await supabase
+  await supabaseAdmin
     .from('word_generations')
     .update({ posted_to_instagram: true })
     .eq('id', wordId)

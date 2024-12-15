@@ -10,19 +10,20 @@
     },
     {
       "path": "/api/generate-random",
-      "schedule": "0 15 * * *"
+      "schedule": "0 20 */3 * *"
     },
     {
       "path": "/api/generate-untranslatable",
-      "schedule": "0 20 * * *"
+      "schedule": "0 20 1-31/3 * *"
     },
     {
       "path": "/api/generate-slang",
-      "schedule": "0 0 * * *"
+      "schedule": "0 20 2-31/3 * *"
     }
   ],
   "env": {
     "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next_public_supabase_anon_key",
     "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
     "OPENAI_API_KEY": "@openai_api_key",
     "INSTAGRAM_ACCESS_TOKEN": "@instagram_access_token",

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 // Define Word type
 interface Word {
@@ -15,7 +15,7 @@ interface Word {
 export async function GET() {
   try {
     // Create test words for each type
-    const { data: words, error } = await supabase
+    const { data: words, error } = await supabaseAdmin
       .from('word_generations')
       .insert([
         {

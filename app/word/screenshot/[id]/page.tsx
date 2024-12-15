@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { getPageColors } from '@/lib/colors'
 
 interface WordGeneration {
@@ -10,11 +10,12 @@ interface WordGeneration {
   example?: string
   usage?: string
   language?: string
+  emoji: string
 }
 
 async function getWord(id: string): Promise<WordGeneration | null> {
   console.log('Fetching word with ID:', id)
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('word_generations')
     .select('*')
     .eq('id', id)
@@ -46,7 +47,7 @@ export default async function WordScreenshotPage({ params }: { params: { id: str
         <div className="max-w-3xl mx-auto text-center space-y-6 p-8">
           {/* Emoji */}
           <div className="text-6xl mb-4">
-            {word.type === 'untranslatable' ? '🧛‍♀️' : '💇‍♀️'}
+            {word.emoji}
           </div>
 
           {/* Word */}

@@ -1,17 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import * as dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
-
-interface TokenInfo {
-  access_token: string
-  expires_at: number
-}
 
 async function refreshToken(oldToken: string): Promise<string> {
   const response = await fetch(
@@ -24,7 +14,7 @@ async function refreshToken(oldToken: string): Promise<string> {
   }
 
   // Store new token in Supabase
-  await supabase
+  await supabaseAdmin
     .from('instagram_tokens')
     .upsert({
       id: 1,
@@ -37,7 +27,7 @@ async function refreshToken(oldToken: string): Promise<string> {
 
 export async function getValidToken(): Promise<string> {
   // Get token from Supabase
-  const { data: tokenData } = await supabase
+  const { data: tokenData } = await supabaseAdmin
     .from('instagram_tokens')
     .select('*')
     .eq('id', 1)

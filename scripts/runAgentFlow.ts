@@ -7,7 +7,7 @@ dotenv.config({ path: '.env.local' })
 const FLOW_API_URL = process.env.FLOW_API_URL
 const FLOW_PREDICTION_ID = process.env.FLOW_PREDICTION_ID
 
-async function askFlowAgent(word: any) {
+export async function askFlowAgent(word: any) {
   if (!FLOW_API_URL || !FLOW_PREDICTION_ID) {
     throw new Error('Missing Flow API configuration')
   }
@@ -19,13 +19,14 @@ async function askFlowAgent(word: any) {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 30000) // 30s timeout
 
-    const response = await fetch(`${FLOW_API_URL}/v1/prediction/${FLOW_PREDICTION_ID}`, {
+    const response = await fetch(`${FLOW_API_URL}/api/v1/prediction/${FLOW_PREDICTION_ID}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': process.env.FLOW_API_KEY || '',
       },
       body: JSON.stringify({
-        question: `Generate a social media post for the word "${word.word}" with definition "${word.definition}"`
+        question: `Generate a social media post for the word "${word.word}" (${word.emoji}) with definition "${word.definition}"`
       }),
       signal: controller.signal
     })
@@ -61,13 +62,14 @@ async function runFlow() {
     const agentResponse = await askFlowAgent(word)
     console.log('Flow Agent response:', agentResponse)
     
-    console.log('Attempting Instagram post...')
+    console.log('Attempting Instagram post...', {
+      word: word.word,
+      emoji: word.emoji,
+      imageUrl
+    })
     const success = await postToInstagram(word, imageUrl)
-    
-    if (success) {
-      console.log(`Successfully posted word: ${word.word}`)
-    } else {
-      console.error(`Failed to post word: ${word.word}`)
+    if (!success) {
+      throw new Error('Instagram post failed')
     }
   } catch (error) {
     console.error('Flow failed:', error)

@@ -1,18 +1,9 @@
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import puppeteer from 'puppeteer'
 import * as dotenv from 'dotenv'
 
 // Load environment variables from .env.local
 dotenv.config({ path: '.env.local' })
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables')
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey)
 
 interface Word {
   id: string
@@ -26,7 +17,7 @@ async function getUnpostedWord(): Promise<Word> {
   console.log('Fetching unposted word...')
   
   // First, get the last posted word type
-  const { data: lastPosted } = await supabase
+  const { data: lastPosted } = await supabaseAdmin
     .from('word_generations')
     .select('type')
     .eq('posted_to_instagram', true)
@@ -49,7 +40,7 @@ async function getUnpostedWord(): Promise<Word> {
   console.log('Looking for word of type:', nextType)
   
   // Get unposted word of the next type
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('word_generations')
     .select('*')
     .eq('posted_to_instagram', false)
@@ -139,7 +130,7 @@ async function uploadToSupabase(screenshot: Buffer, word: string) {
   console.log('Using sanitized filename:', sanitizedFilename)
 
   try {
-    const { data, error } = await supabase.storage
+    const { data, error } = await supabaseAdmin.storage
       .from('instagram-posts')
       .upload(sanitizedFilename, screenshot, {
         contentType: 'image/png',
@@ -290,7 +281,7 @@ async function main() {
     console.log('Successfully posted to Instagram:', publishResult)
     
     // Update word as posted in Supabase
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('word_generations')
       .update({ posted_to_instagram: true })
       .eq('id', word.id)

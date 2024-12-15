@@ -15,8 +15,6 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/api/test-:path*',
-    '/api/cron/:path*/post',
     '/word/screenshot/:path*',
-    '/api/test-:path*'
   ]
 } 
